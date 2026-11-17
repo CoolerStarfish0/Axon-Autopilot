@@ -1,0 +1,20 @@
+﻿node_modules/
+dist/
+release/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+
+# Local backups
+*.bak
+*.old
+package-before-app.json
+
+# Development test files
+vision-test.cjs
+*.before-stop
+*-before-agent-*.js
+*.backup-*

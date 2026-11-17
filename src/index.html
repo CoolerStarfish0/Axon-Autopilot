@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autopilot</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px 22px;
+  background: #10141c;
+  color: #edf2f7;
+  font-family: "Segoe UI", sans-serif;
+  border: 1px solid #303b4b;
+  border-radius: 14px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.brand { font-size: 19px; font-weight: 700; }
+.hint { color: #8995a6; font-size: 11px; }
+
+textarea {
+  width: 100%;
+  height: 76px;
+  resize: none;
+  border: 1px solid #354254;
+  border-radius: 9px;
+  background: #171e29;
+  color: white;
+  padding: 12px;
+  font: 14px "Segoe UI", sans-serif;
+  outline: none;
+}
+
+textarea:focus { border-color: #38b879; }
+
+.settings {
+  margin-top: 17px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 19px 24px;
+}
+
+.setting-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.setting-value {
+  color: #49d990;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.slider-shell {
+  height: 24px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 9px;
+}
+
+.slider-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 9px;
+  border-radius: 20px;
+  background: #293442;
+  overflow: hidden;
+}
+
+.slider-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: var(--fill, 50%);
+  border-radius: 20px;
+  background: linear-gradient(90deg, #087443, #20bd70);
+  overflow: hidden;
+  transition: width .08s linear;
+}
+
+.bubble-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bubble {
+  position: absolute;
+  bottom: -8px;
+  left: var(--left);
+  width: var(--size);
+  height: var(--size);
+  border: 1.5px solid #79ffb5;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow:
+    0 0 4px #38b879aa,
+    inset 0 0 3px #38b87944;
+  opacity: 0;
+  animation: bubbleRise var(--duration) ease-in infinite;
+  animation-delay: var(--delay);
+}
+
+@keyframes bubbleRise {
+  0% {
+    transform: translate(0, 0) scale(.7);
+    opacity: 0;
+  }
+  12% {
+    opacity: .9;
+  }
+  35% {
+    transform: translate(var(--drift1), -13px) scale(1);
+    opacity: .85;
+  }
+  65% {
+    transform: translate(var(--drift2), -27px) scale(.9);
+    opacity: .7;
+  }
+  88% {
+    opacity: .45;
+  }
+  100% {
+    transform: translate(var(--drift3), -43px) scale(.65);
+    opacity: 0;
+  }
+}
+
+.slider-shell input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  background: transparent;
+  cursor: grab;
+  outline: none;
+}
+
+.slider-shell input:active { cursor: grabbing; }
+
+.slider-shell input::-webkit-slider-runnable-track {
+  height: 9px;
+  background: transparent;
+}
+
+.slider-shell input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 19px;
+  height: 19px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: #d8ffe9;
+  border: 3px solid #38b879;
+  box-shadow: 0 0 9px #38b87999, 0 0 18px #38b87944;
+}
+
+.slider-shell input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px #38b87944, 0 0 12px #38b879;
+}
+
+.level-labels {
+  display: flex;
+  justify-content: space-between;
+  margin: 2px 7px 0;
+  color: #8491a2;
+  font-size: 10px;
+}
+
+.humanise {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid #303b4b;
+  border-radius: 9px;
+  background: #151c26;
+}
+
+.humanise input {
+  accent-color: #38b879;
+  width: 15px;
+  height: 15px;
+  margin: 2px 0 0;
+}
+
+.humanise-title {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.humanise-note {
+  margin-top: 3px;
+  color: #8995a6;
+  font-size: 10px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+#status { color: #94a3b8; font-size: 11px; }
+
+button {
+  border: 0;
+  border-radius: 7px;
+  padding: 9px 17px;
+  color: #07150e;
+  background: #38b879;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover { background: #4bd18d; }
+button:disabled { opacity: .5; cursor: wait; }
+
+@media (max-width: 470px) {
+  .settings { grid-template-columns: 1fr; }
+  .humanise { grid-column: 1; }
+}
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">AUTOPILOT</div>
+    <div class="hint">RIGHT SHIFT × 2 · ESC TO HIDE</div>
+  </div>
+
+  <textarea id="task" autofocus
+    placeholder="What would you like Autopilot to do?"></textarea>
+
+  <div class="settings">
+    <div class="setting">
+      <div class="setting-label">
+        <span>Typing speed</span>
+        <span class="setting-value" id="speedValue">83%</span>
+      </div>
+
+      <div class="slider-shell" id="speedShell">
+        <div class="slider-track">
+          <div class="slider-fill" id="speedFill"></div>
+        </div>
+        <input id="speedSlider" type="range"
+          min="1" max="100" value="83" step="1"
+          aria-label="Typing speed">
+      </div>
+    </div>
+
+    <div class="setting">
+      <div class="setting-label">
+        <span>English complexity</span>
+        <span class="setting-value" id="complexityValue">Medium</span>
+      </div>
+
+      <div class="slider-shell" id="complexityShell">
+        <div class="slider-track">
+          <div class="slider-fill" id="complexityFill"></div>
+        </div>
+        <input id="complexitySlider" type="range"
+          min="0" max="100" value="50" step="1"
+          aria-label="English complexity">
+      </div>
+
+      <div class="level-labels">
+        <span>Low</span>
+        <span>Medium</span>
+        <span>High</span>
+      </div>
+    </div>
+
+    <label class="humanise">
+      <input id="humanise" type="checkbox">
+      <span>
+        <div class="humanise-title">Humanise personal writing</div>
+        <div class="humanise-note">
+          Natural tone for explicitly personal writing only, not schoolwork.
+        </div>
+      </span>
+    </label>
+  </div>
+
+  <div class="footer">
+    <div id="status">Ready for a task</div>
+    <button id="submit">SUBMIT TASK</button>
+  </div>
+
+<script src="./renderer.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; }
+
+html, body {
+  width: 54px;
+  height: 54px;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.indicator {
+  width: 48px;
+  height: 48px;
+  margin: 3px;
+  border-radius: 50%;
+  background: rgba(19, 27, 35, 0.97);
+  border: 1px solid rgba(75, 105, 91, 0.65);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.spinner {
+  width: 23px;
+  height: 23px;
+  border: 3px solid rgba(72, 217, 139, 0.2);
+  border-top-color: #49df91;
+  border-right-color: #49df91;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+.stop {
+  display: none;
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #ff7777;
+  font: bold 17px "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.indicator:hover .stop { background: rgba(255, 70, 70, 0.12); }
+.indicator:hover .spinner { opacity: 0.25; }
+
+.tick {
+  display: none;
+  color: #49df91;
+  font: bold 27px "Segoe UI", sans-serif;
+  transform: scale(0.5);
+  opacity: 0;
+}
+
+.indicator.complete .spinner,
+.indicator.complete .stop { display: none; }
+
+.indicator.complete .tick {
+  display: block;
+  animation: pop 0.22s ease-out forwards;
+}
+
+.indicator.running .stop { display: block; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pop {
+  to { transform: scale(1); opacity: 1; }
+}
+</style>
+</head>
+<body>
+<div class="indicator running" id="indicator">
+  <div class="spinner"></div>
+  <button class="stop" id="stop" title="Stop Autopilot task"
+    aria-label="Stop task">&#9632;</button>
+  <div class="tick">&#10003;</div>
+</div>
+
+<script>
+const indicator = document.getElementById("indicator");
+
+document.getElementById("stop").addEventListener("click", () => {
+  window.autopilot.stopTask();
+  indicator.classList.remove("running");
+  indicator.classList.add("complete");
+});
+
+window.autopilot.onIndicatorLoading(() => {
+  indicator.classList.remove("complete");
+  indicator.classList.add("running");
+});
+
+window.autopilot.onIndicatorComplete(() => {
+  indicator.classList.remove("running");
+  indicator.classList.add("complete");
+});
+</script>
+</body>
+</html>

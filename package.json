@@ -1,0 +1,76 @@
+{
+  "name": "autopilot",
+  "version": "1.0.0",
+  "description": "Independent Autopilot desktop agent",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis",
+    "dist:mac": "electron-builder --mac dmg"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^44.8.0",
+    "electron-builder": "^26.18.0"
+  },
+  "dependencies": {
+    "@nut-tree-fork/nut-js": "^4.2.6",
+    "sharp": "^0.35.5",
+    "uiohook-napi": "^1.5.5"
+  },
+  "build": {
+    "appId": "com.axon.autopilot",
+    "productName": "Axon Autopilot",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/index.html",
+      "src/indicator.html",
+      "src/main.js",
+      "src/preload.js",
+      "src/renderer.js",
+      "package.json"
+    ],
+    "asar": true,
+    "npmRebuild": true,
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "CoolerStarfish0",
+        "repo": "Axon-Autopilot"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Axon-Autopilot-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "artifactName": "Axon-Autopilot-${arch}.${ext}"
+    }
+  }
+}
