@@ -1,6 +1,6 @@
 {
   "name": "autopilot",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Independent Autopilot desktop agent",
   "main": "src/main.js",
   "scripts": {
