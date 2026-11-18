@@ -50,7 +50,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-installers
-          path: dist/*.dmg
+          path: |
+            dist/*.dmg
+            dist/*.zip
           if-no-files-found: error
 
   publish-windows:
@@ -83,6 +85,8 @@ jobs:
       - name: Publish macOS installers
         uses: softprops/action-gh-release@v2
         with:
-          files: release-assets/*.dmg
+          files: |
+            release-assets/*.dmg
+            release-assets/*.zip
           fail_on_unmatched_files: true
           generate_release_notes: true
