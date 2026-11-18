@@ -3,6 +3,7 @@ const path = require("path");
 const { uIOhook, UiohookKey } = require("uiohook-napi");
 const { mouse, keyboard, screen, Point, Key } = require("@nut-tree-fork/nut-js");
 const sharp = require("sharp");
+const fs = require("fs");
 
 let promptWindow = null;
 let indicatorWindow = null;
@@ -741,7 +742,61 @@ ipcMain.handle("autopilot:submit", async (_event, task) => {
 ipcMain.on("autopilot:hide", hidePrompt);
 ipcMain.on("autopilot:stop", emergencyStop);
 
+const startupPreferencePath = path.join(app.getPath("userData"), "startup-preference.json");
+let launchAtStartup = true;
+
+function loadStartupPreference() {
+  try {
+    const saved = JSON.parse(fs.readFileSync(startupPreferencePath, "utf8"));
+    if (typeof saved.launchAtStartup === "boolean") {
+      launchAtStartup = saved.launchAtStartup;
+    } else {
+      fs.writeFileSync(startupPreferencePath, JSON.stringify({ launchAtStartup: true }, null, 2));
+    }
+  } catch {
+    launchAtStartup = true;
+    try {
+      fs.mkdirSync(path.dirname(startupPreferencePath), { recursive: true });
+      fs.writeFileSync(startupPreferencePath, JSON.stringify({ launchAtStartup: true }, null, 2));
+    } catch (error) {
+      console.error("[AUTOPILOT] Could not save startup preference:", error);
+    }
+  }
+  applyStartupPreference();
+}
+
+function applyStartupPreference() {
+  if (process.platform === "win32" || process.platform === "darwin") {
+    app.setLoginItemSettings({ openAtLogin: launchAtStartup });
+  }
+}
+
+ipcMain.handle("autopilot:get-startup", () => ({
+  enabled: launchAtStartup,
+  supported: process.platform === "win32" || process.platform === "darwin"
+}));
+
+ipcMain.handle("autopilot:set-startup", (_event, enabled) => {
+  if (typeof enabled !== "boolean") {
+    return { ok: false, enabled: launchAtStartup, message: "Invalid startup setting." };
+  }
+  if (process.platform !== "win32" && process.platform !== "darwin") {
+    return { ok: false, enabled: false, message: "Startup launch is not supported on this platform." };
+  }
+  launchAtStartup = enabled;
+  try {
+    fs.mkdirSync(path.dirname(startupPreferencePath), { recursive: true });
+    fs.writeFileSync(startupPreferencePath, JSON.stringify({ launchAtStartup }, null, 2));
+    applyStartupPreference();
+    return { ok: true, enabled: launchAtStartup };
+  } catch (error) {
+    console.error("[AUTOPILOT] Could not update startup preference:", error);
+    return { ok: false, enabled: !enabled, message: "Could not update startup setting: " + error.message };
+  }
+});
+
 app.whenReady().then(() => {
+  loadStartupPreference();
   createPrompt();
   startKeyboardHook();
 });
