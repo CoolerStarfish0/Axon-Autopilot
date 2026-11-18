@@ -11,6 +11,8 @@ const complexityValue = document.getElementById("complexityValue");
 const complexityFill = document.getElementById("complexityFill");
 
 const humaniseCheckbox = document.getElementById("humanise");
+const startupToggle = document.getElementById("startupToggle");
+const startupNote = document.getElementById("startupNote");
 
 let complexityDragging = false;
 
@@ -88,6 +90,35 @@ complexitySlider.addEventListener("change", () => {
 });
 
 humaniseCheckbox.addEventListener("change", sendSettings);
+
+startupToggle.addEventListener("change", async () => {
+  startupToggle.disabled = true;
+  startupNote.textContent = "Updating startup setting...";
+  try {
+    const result = await window.autopilot.setStartup(startupToggle.checked);
+    startupToggle.checked = result.enabled;
+    startupNote.textContent = result.ok
+      ? (result.enabled ? "Enabled — Axon opens when you sign in." : "Disabled — Axon will only open when you launch it.")
+      : (result.message || "Could not update startup setting.");
+  } catch (error) {
+    startupToggle.checked = !startupToggle.checked;
+    startupNote.textContent = "Could not update startup setting: " + error.message;
+  } finally {
+    startupToggle.disabled = false;
+  }
+});
+
+window.autopilot.getStartup().then(result => {
+  startupToggle.checked = result.enabled;
+  startupToggle.disabled = !result.supported;
+  if (!result.supported) startupNote.textContent = "Automatic startup is not supported on this platform.";
+  else startupNote.textContent = result.enabled
+    ? "Enabled — Axon opens when you sign in."
+    : "Disabled — Axon will only open when you launch it.";
+}).catch(error => {
+  startupToggle.checked = true;
+  startupNote.textContent = "Could not read startup setting: " + error.message;
+});
 
 window.autopilot.onStatus((message) => {
   statusText.textContent = message;
