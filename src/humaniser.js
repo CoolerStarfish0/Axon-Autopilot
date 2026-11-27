@@ -40,6 +40,7 @@ function registerHumaniserIpc(ipcMain, ollamaUrl) {
         body: JSON.stringify({
           model: MODEL,
           stream: false,
+          think: false,
           messages: [
             {
               role: "system",
