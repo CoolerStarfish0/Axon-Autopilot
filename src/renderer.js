@@ -1,5 +1,6 @@
 ﻿const taskInput = document.getElementById("task");
 const submitButton = document.getElementById("submit");
+const openHumaniserButton = document.getElementById("openHumaniser");
 const statusText = document.getElementById("status");
 
 const speedSlider = document.getElementById("speedSlider");
@@ -153,6 +154,13 @@ async function submitTask() {
 }
 
 submitButton.addEventListener("click", submitTask);
+openHumaniserButton.addEventListener("click", async () => {
+  try {
+    await window.autopilot.openHumaniser();
+  } catch (error) {
+    statusText.textContent = "Could not open Humaniser: " + error.message;
+  }
+});
 
 taskInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
