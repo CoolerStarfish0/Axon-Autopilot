@@ -4,8 +4,10 @@ const { uIOhook, UiohookKey } = require("uiohook-napi");
 const { mouse, keyboard, screen, Point, Key } = require("@nut-tree-fork/nut-js");
 const sharp = require("sharp");
 const fs = require("fs");
+const { registerHumaniserIpc } = require("./humaniser");
 
 let promptWindow = null;
+let humaniserWindow = null;
 let indicatorWindow = null;
 let indicatorHideTimer = null;
 let indicatorReady = false;
@@ -19,6 +21,7 @@ let complexityLevel = "Medium";
 let humanisePersonal = false;
 
 const OLLAMA = "http://127.0.0.1:11434";
+registerHumaniserIpc(ipcMain, OLLAMA);
 const VISION_MODEL = "qwen3-vl:8b";
 const MAX_ACTIONS = 30;
 
@@ -164,6 +167,40 @@ function createPrompt() {
   promptWindow.loadFile(path.join(__dirname, "index.html"));
   promptWindow.on("closed", () => { promptWindow = null; });
 }
+
+
+function createHumaniserWindow() {
+  if (humaniserWindow && !humaniserWindow.isDestroyed()) {
+    humaniserWindow.show();
+    humaniserWindow.focus();
+    return;
+  }
+
+  humaniserWindow = new BrowserWindow({
+    width: 980,
+    height: 780,
+    minWidth: 760,
+    minHeight: 620,
+    show: false,
+    backgroundColor: "#10141c",
+    title: "Axon Humaniser",
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+
+  humaniserWindow.loadFile(path.join(__dirname, "humaniser.html"));
+  humaniserWindow.once("ready-to-show", () => humaniserWindow?.show());
+  humaniserWindow.on("closed", () => { humaniserWindow = null; });
+}
+
+ipcMain.handle("autopilot:open-humaniser", () => {
+  createHumaniserWindow();
+  return { ok: true };
+});
 
 function emergencyStop() {
   const controller = activeTaskController;
