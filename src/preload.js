@@ -2,6 +2,8 @@
 
 contextBridge.exposeInMainWorld("autopilot", {
   submitTask: (task) => ipcRenderer.invoke("autopilot:submit", task),
+  openHumaniser: () => ipcRenderer.invoke("autopilot:open-humaniser"),
+  humaniseText: (text) => ipcRenderer.invoke("humaniser:rewrite", text),
   getStartup: () => ipcRenderer.invoke("autopilot:get-startup"),
   setStartup: (enabled) => ipcRenderer.invoke("autopilot:set-startup", enabled),
   updateSettings: (settings) => ipcRenderer.send("autopilot:settings", settings),
